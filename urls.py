@@ -19,8 +19,9 @@ handlers = [
     (r"/api/publicarticle", Articles.PublicArticleHandler),
     (r"/api/editarticle", Articles.EditArticleHandler),
     (r"/api/deletearticle", Articles.DeleteArticleHandler),
-    (r"/api/sortarticle", Articles.SortArticleHandler),
     (r"/api/listarticle", Articles.ListArticleHandler),
+    (r"/api/sortarticle", Articles.SortArticleHandler),
+    (r"/api/articledetails", Articles.ArticleDetails),
 
 
     (r"/api/createlabel", LabelHandler.CreateLabelHandler),

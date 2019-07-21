@@ -110,7 +110,7 @@ class ListArticleHandler(BaseHandler):
             return self.write(dict(errcode=RET.PARAMERR, errmsg='参数错误'))
 
         page_start = (page_start - 1) * page_limit
-        sql = "select * from vor_article limit %(start)s, %(page)s;"
+        sql = "select * from vor_article order by vor_article_ctime desc limit %(start)s, %(page)s;"
         try:
             article_list=self.db.query(sql,start=page_start,page=page_limit)
         except Exception as e:
@@ -133,15 +133,74 @@ class ListArticleHandler(BaseHandler):
                     "article_views": i['vor_article_views'],
                     "article_like_count": i['vor_article_like_count'],
                     "article_comment_count": i['vor_article_comment_count'],
-                    # "create_time": i['vor_article_ctime'],
+                    "create_time": str(i['vor_article_ctime']),
                 }
                 article.append(i)
             self.write(dict(errno=RET.OK, errmsg="OK",message=article ))
-            article.clear()
+            return article.clear()
 
 
 
 class SortArticleHandler(BaseHandler):
     pass
+
+
+class ArticleDetails(BaseHandler):
+    def get(self):
+        article_id = self.get_argument("article_id")
+
+        if not article_id:
+            return self.write(dict(errno=RET.PARAMERR, errmsg="参数错误!"))
+
+        sql = "select * from vor_article where vor_article_id=%(id)s;"
+        try:
+            article = self.db.get(sql, id=article_id)
+        except Exception as e:
+            logging.error(e)
+            return self.write(dict(errno=RET.DATAERR, errmsg="数据错误!"))
+
+        if not article:
+            return self.write(dict(errno=RET.NODATA, errmsg="无数据!"))
+        else:
+            comment_sql = "select * from vor_comment where vor_comment_article=%(id)s;"
+
+            try:
+                comment = self.db.query(comment_sql, id=article_id)
+            except Exception as e:
+                logging.error(e)
+                return self.write(dict(errno=RET.DATAERR, errmsg="数据错误!"))
+
+            if not comment:
+                comment = {}
+            else:
+                comment_list = []
+                for i in comment:
+                    i = {
+                        "comment_id":i['vor_comment_id'],
+                        "comment_user":i['vor_comment_user'],
+                        "comment_article":i['vor_comment_article'],
+                        "comment_content":i['vor_comment_content'],
+                        "comment_date":str(i['vor_comment_date']),
+                        "parent_comment_id":str(i['parent_comment_id']),
+                    }
+                    comment_list.append(i)
+            article_details = {
+                'article_id': article['vor_article_id'],
+                'article_author': article['vor_article_author'],
+                'rticle_title': article['vor_article_title'],
+                'article_content': article['vor_article_content'],
+                'article_sort': article['vor_article_sort'],
+                'article_views': article['vor_article_views'],
+                'article_like_count': article['vor_article_like_count'],
+                'article_comment_count': article['vor_article_comment_count'],
+                'comment_list': comment_list,
+                'article_ctime': str(article['vor_article_ctime']),
+            }
+            self.write(dict(errno=RET.OK, errmsg="OK", message=article_details))
+            return comment_list.clear()
+
+
+
+
 
 
