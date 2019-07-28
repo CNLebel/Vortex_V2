@@ -90,6 +90,8 @@ class LoginHandler(BaseHandler):
         # 获取参数
         # mobile = self.json_args.get("mobile")
         # password = self.json_args.get("password")
+        # password2 = self.json_args.get("password2")
+        # print(mobile,password,password2)
         data = json.loads(self.get_argument("data"))
         mobile = data.get('mobile')
         password = data.get('password')
@@ -118,6 +120,7 @@ class LoginHandler(BaseHandler):
                 self.session.save()
             except Exception as e:
                 logging.error(e)
+
             return self.write(dict(errcode=RET.OK, errmsg="OK"))
         else:
             return self.write(dict(errcode=2, errmsg="手机号或密码错误！"))
